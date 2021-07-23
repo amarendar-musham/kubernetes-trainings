@@ -1,0 +1,164 @@
+https://code.visualstudio.com/download 
+
+docker run -dti --name webui -p 9000:9000 -v /var/run/docker.sock:/var/run/docker.sock --restart always portainer/portainer
+
+https://github.com/redashu/oracle19thjuly_2021/tree/day1
+https://github.com/redashu/oracle19thjuly_2021/tree/day2
+
+https://github.com/redashu/docker/tree/namespaces
+
+docker stats
+docker rm $(docker ps -f "status=exited" -q)
+docker isolation --> docker namespace.
+
+docker run -dti --name amar3 --memory 100m --cpu-shares=20 alpine ping fb.com 
+
+docker run --help | grep cpu
+
+CGROUP - resource limit. 
+
+docker group - command line utilities - connect engine.
+
+useradd u1
+usermod -aG docker u1
+
+--cpuset-cpus 1 --cpu-shares 30
+
+
+docker run -dti --restart always --cpuset-cpus 1 --cpu-shares 30 --memory 300m --name amarcg1 busybox ping fb.com 
+
+docker update amarcg1 --memory 300m
+
+docker inspect amarcg1 -f '{{.Id}}'
+docker inspect amarcg1 --format='{{.State.Status}}'
+docker inspect amarcg1 --format='{{.HostConfig.RestartPolicy.Name}}'
+docker inspect amarcg1 -f '{{.NetworkSettings.IPAddress}}'
+docker inspect amarcg1 -f '{{.State.Status}}'
+ 
+docker inspect $(docker ps -q) -f '{{.NetworkSettings.IPAddress}}'
+ 
+FROM openjdk
+LABEL name="amar"
+LABEL email="amar@oracle.com"
+RUN mkdir /mycode
+ADD hello.java /mycode/hello.java
+WORKDIR /mycode
+RUN javac hello.java
+CMD ["java","myclass"]
+
+hello.java
+class myclass { 
+    public static void main(String args[]) 
+    { 
+        // test expression 
+        while (true) { 
+            System.out.println("Hello World"); 
+  
+            // update expression 
+        } 
+    } 
+} 
+
+
+CMD sets default command and/or parameters, which can be overwritten from command line when docker container runs.
+ENTRYPOINT command and parameters will not be overwritten from command line. Instead, all command line arguments will be added after ENTRYPOINT parameters.
+
+
+FROM oraclelinux:8.4
+RUN dnf install java-1.8.0-openjdk.x86_64 java-1.8.0-openjdk-devel.x86_64 -y
+RUN mkdir /mycode
+COPY hello.java /mycode/
+WORKDIR /mycode
+RUN javac hello.java
+CMD ["java","myclass"]
+
+
+git clone https://github.com/mdn/beginner-html-site-styled
+
+FROM nginx
+WORKDIR /usr/share/nginx/html/
+COPY . .
+
+create .dockerignore;
+
+
+docker save -o nginx.tar amarweb:v1
+docker rmi -f amarweb:v1
+docker load -i nginx.tar ## loaded image amarweb:v1
+docker history amarweb:v1
+
+If you want changes happened in a container. 
+docker commit amarc1 testimage:v1
+docker commit <container> <image-tag>
+
+
+docker run -it --rm image:v1 sh ## rm will remove the container when exits. 
+
+
+===================NETWORKS=======================
+docker tag ashupython:v3 docker.io/amarendarm/python:v1
+docker login -u amarendarm 
+docker push amarendarm/python:v1 (OR)
+docker push docker.io/amarendarm/python:v1
+docker logout
+
+docker network ls (Only 3 types of network)
+docker network inspect bridge # docker0
+1. bridge - 172.17.0.2/16
+2. none - no-ip #only lo network(loopback)
+3. host - gets host engines ip - require no-port-forwarding
+
+docker run -it --rm --network host alpine sh ## gets docker0, eth0, lo ## eth0 is host network.
+
+docker network create amarbr1 # 172.18.0.0/16
+docker network create amarbr2 --subnet 192.168.100.0/24
+
+docker run -ti --rm --network amarbr2 192.168.100.200 alpine sh
+
+***amarbr1 and amarbr2 bridges cannot connect each other. they meant for different customers. 
+
+docker network prune # remove all networks except the default 3. 
+
+=========================VOLUMES============================
+Docker storage 
+	1. Engine - /var/lib/docker
+	2. container (ephemeral, non-persistent)
+	
+Container
+	1. bind mount
+	2. volume
+	
+docker volume create amarvol1 # /var/lib/docker/volume
+docker run -it --name amard1 -v amarvol1:/datastorage:rw oraclelinux:8.3 bash
+
+/var/lib/docker/volumes/amarv1/_data - engines storage location
+
+docker volume rm $(docker volume ls -q)
+
+docker run -it --rm -v /etc:/mydata:ro oraclelinux:8.3 bash
+
+----------------------------------------
+Local computer - windows machine - connect to docker engine. 
+
+Run the below command in the client. 
+
+docker context create name1 --docker host="tcp://107.21.148.226:2375"
+
+docker context ls
+docker context rm new1
+docker context use name1
+docker context ls
+
+
+docker run -dti --name amardb --restart always -v amarvol1:/var/lib/mysql:rw -e MYSQL_ROOT_PASSWORD=Oracle099 mysql
+
+docker exec -it amardb bash
+cat /etc/os-release
+mysql -u root -p
+#Oracle099
+
+show databases;
+create database amarDB;
+exit;
+
+docker stats

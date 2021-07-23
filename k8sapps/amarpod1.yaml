@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: Pod
+metadata:
+ name: amarpod-123
+ namespace: amar-space
+spec:
+ containers:
+ - image: amarendarm/python:v1
+   name: amarc1
